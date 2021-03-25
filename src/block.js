@@ -70,15 +70,15 @@ class Block {
         let rawData = self.body; 
 
         // Decoding the data to retrieve the JSON representation of the object
-        let decodedData = hex2ascii.decodedData(rawData);
+        let decodedData = hex2ascii(rawData);
 
         // Parse the data to an object to be retrieve.
-        let strData = JSON.stringify(decodedData);
+        let strData = JSON.parse(decodedData);
 
         // Resolve with the data if the object isn't the Genesis block
-        if(this.previousBlockHash == null)
+        if(this.previousBlockHash != null)
         {
-           resolve(strData);
+            resolve(strData);
         }else{
             reject("This is genesis block");
         }
