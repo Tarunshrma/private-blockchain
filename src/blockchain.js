@@ -25,7 +25,7 @@ class Blockchain {
      */
     constructor() {
         this.chain = [];
-        this.height = 0;
+        this.height = -1;
         this.initializeChain();
     }
 
@@ -35,7 +35,7 @@ class Blockchain {
      * Passing as a data `{data: 'Genesis Block'}`
      */
     async initializeChain() {
-        if( this.height === 0){
+        if( this.height === -1){
             let block = new BlockClass.Block({data: 'Genesis Block'});
             await this._addBlock(block);
         }
@@ -83,7 +83,7 @@ class Blockchain {
            self.chain.push(block);
 
            //Chain height will be last added block height
-           self.height = self.chain.length - 1;
+           self.height = self.chain.length;
 
            resolve("Block added to chain");
         });
@@ -202,11 +202,12 @@ class Blockchain {
         let stars = [];
         return new Promise((resolve, reject) => {
             self.chain.forEach(block => {
-                
                 let data = block.getBData();
 
-                if(data.owner == address){
-                    stars.push(data)
+                if (data){
+                    if(data.owner == address){
+                        stars.push(data)
+                    }
                 }
             })
 
@@ -223,8 +224,33 @@ class Blockchain {
     validateChain() {
         let self = this;
         let errorLog = [];
+        let promises = [];
+
         return new Promise(async (resolve, reject) => {
-            
+            self.chain.forEach(block => {
+                //Validate the block hash to check if it is tempred or not.. 
+                //Store is in promise array and check later
+                promises.push(block.validate());
+                
+                if(block.height > 0){
+                    let previousHash = self.chain[block.height - 1].hash;
+                    if(previousHash != block.previousBlockHash){
+                        errorLog.push("Block with height " + block.height + " prevoius hash did not matched.")
+                    }
+                }
+            });
+
+            Promise.all(promises).then((results) => {
+                var chainIndex = 0;
+                results.forEach(valid => {
+                    if(!valid){
+                        errorLog.push("Block with height " + self.chain[chainIndex].height + " has tempered.")
+                    }
+                });
+                chainIndex ++;
+            }).catch((err) => { console.log(err); reject(err)});
+
+            resolve(errorLog);
         });
     }
 
