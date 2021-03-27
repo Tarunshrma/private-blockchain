@@ -99,7 +99,7 @@ class Blockchain {
      */
     requestMessageOwnershipVerification(address) {
         return new Promise((resolve) => {
-            let timeStamp = new Date().getTime().toString().slice(0,-3).toString();
+            let timeStamp = new Date().getTime().toString().toString();
             let ownershipMessage = address + ":" 
                                            + timeStamp 
                                            + ":starRegistry";
@@ -128,8 +128,8 @@ class Blockchain {
     submitStar(address, message, signature, star) {
         let self = this;
         return new Promise(async (resolve, reject) => {
-            let messageTime = parseInt(message.split(':'[1]));
-            let currentTime = parseInt(new Date().getTime().toString().slice(0,-3));
+            let messageTime = parseInt(message.split(':')[1]);
+            let currentTime = parseInt(new Date().getTime().toString());
 
             //If if 5 min. elapsed...
             let difference = currentTime - messageTime;
@@ -141,17 +141,21 @@ class Blockchain {
                 return;
             }
 
-            let verified = bitcoinMessage.verify(message,address,signature);
+            try{
+                let verified = bitcoinMessage.verify(message,address,signature);
 
-            if(!verified){
-                reject("Message not varified...");
-                return;
+                if(!verified){
+                    reject("Message not varified...");
+                    return;
+                }
+    
+                let blockToBeAdded = new BlockClass.Block({'owner' : address, 'star' : star});
+                self._addBlock(blockToBeAdded); 
+                
+                resolve(blockToBeAdded);
+            }catch(err){
+                reject(err.message);
             }
-
-            let blockToBeAdded = new BlockClass.Block({'owner' : address, 'star' : star});
-            self._addBlock(blockToBeAdded); 
-            
-            resolve(blockToBeAdded);
         });
     }
 
