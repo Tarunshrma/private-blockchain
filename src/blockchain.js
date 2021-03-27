@@ -83,7 +83,7 @@ class Blockchain {
            self.chain.push(block);
 
            //Chain height will be last added block height
-           self.height = self.chain.length;
+           self.height = self.chain.length - 1;
 
            resolve("Block added to chain");
         });
@@ -213,8 +213,7 @@ class Blockchain {
                         stars.push(data)
                     }
                 }
-            })
-
+            });
             resolve(stars);
         });
     }
