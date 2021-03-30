@@ -118,6 +118,18 @@ class BlockchainController {
         });
     }
 
+        // Endpoint that allows user to check validity of blockchain
+        validateBlockChain() {
+            this.app.get("/validateBlockChain", async (req, res) => {
+                try{
+                    await this.blockchain.validateChain();
+                    return res.status(200).json("Blckchain is valid");
+                }catch(error){
+                    return res.status(500).send("Blockchain is invalid");
+                }
+            });
+        }
+
 }
 
 module.exports = (app, blockchainObj) => { return new BlockchainController(app, blockchainObj);}

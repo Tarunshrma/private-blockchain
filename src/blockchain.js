@@ -65,6 +65,9 @@ class Blockchain {
     _addBlock(block) {
         let self = this;
         return new Promise(async (resolve, reject) => {
+           
+           //validate the chain befoer adding to block
+           self.validateChain().then(result =>{ //In case of valid chain add the block
            //Add current timestamp
            block.time = new Date().getTime().toString().slice(0,-3);
            
@@ -72,12 +75,12 @@ class Blockchain {
            block.height = self.height + 1;
 
            //If not the genesis block, then add the previous block hash
-           if(self.height > 0){
+           if(self.height >= 0){
               block.previousBlockHash = this.chain[this.chain.length - 1].hash;
            }
            
            //Calculate the hash of block
-           block.hash = SHA256(block.toString()).toString();
+           block.hash = SHA256(JSON.stringify(block)).toString();
 
            //Add the block to chain
            self.chain.push(block);
@@ -86,6 +89,10 @@ class Blockchain {
            self.height = self.chain.length - 1;
 
            resolve("Block added to chain");
+
+           },error=>{
+              reject(error);
+           });
         });
     }
 
